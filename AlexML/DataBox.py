@@ -13,16 +13,19 @@ STUFF DOESN'T LIKE STRINGS AND SUCH.
 """
 
 
-
+import numpy as np
 
 
 
 class DataBox:
-	def __init__(self, data, header=[]):
-		if header == []:
-			header = [str(i) for i in xrange(data.shape[1])]
-		self.data = data
-		self.header = header
+	def __init__(self, df, targetcolname):
+		header = df.columns.values
+		targetcolnum = np.where(header == targetcolname)[0][0]
+		self.data = df.as_matrix()
+		self.target = self.data[:,targetcolnum]
+		self.data = np.delete(self.data, targetcolnum, axis=1)
+		self.header = np.delete(header, targetcolnum)
+		self.__update_header_dict()
 	
 	def __update_header_dict(self):
 		self.headerdict = dict([(self.header[i], i) for i in xrange(len(self.header))])
@@ -34,15 +37,3 @@ class DataBox:
 	def get_column_nums(self, header_fields):
 		hdct =  self.headerdict
 		return [hdct[header_field] for header_field in header_fields]
-
-class NPDataBox(DataBox):
-	def __init__(self, data, header=[]):
-		super(NPDataBox, self).__init__(data, header=header)
-
-class MultiTypeDataBox(DataBox):
-	def __init__(self, data, header=[]):
-		super(MultiTypeDataBox, self).__init__(data, header=header)
-
-	# Casts it to a numpy array
-	def convert_to_npdatabox(self):
-		return NPDataBox(np.array(self.data), self.header)
